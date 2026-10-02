@@ -1,0 +1,323 @@
+/* ------------------------------------------------------------------
+   CRT intro machinery. Values prefixed -- are written per frame by
+   components/intro/useIntroTimeline.ts. Stacking: room 40 < stage 41 <
+   tv 42 < skip 43.
+   ------------------------------------------------------------------ */
+
+/* Ink "room": server-rendered, shown only while the head script marked the
+   visit as an intro visit, so the hero never flashes before the intro. */
+.intro-room {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  background: var(--ink);
+}
+
+html[data-intro] {
+  overflow: hidden;
+}
+
+html[data-intro] .intro-room {
+  display: block;
+}
+
+html[data-intro="fade"] .intro-room {
+  animation: room-out 400ms var(--ease-out) forwards;
+}
+
+@keyframes room-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* The stage: the real hero, clipped to the TV screen while the intro plays. */
+.intro-stage[data-playing] {
+  position: relative;
+  z-index: 41;
+  height: 100dvh; /* replaced inline with the measured viewport height */
+  overflow: hidden;
+  background: var(--burgundy);
+  clip-path: inset(50% 50% 50% 50%); /* replaced inline every frame */
+}
+
+.intro-stage[data-playing] .intro-cam {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Colour bleeds in from the screen centre: a grey layer blended in
+   `saturation` mode, masked by a growing hole. */
+.intro-desat {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--crt-mid);
+  mix-blend-mode: saturation;
+  opacity: var(--sat-o, 1);
+  -webkit-mask-image: radial-gradient(
+    circle var(--rr, 200px) at var(--scx, 50%) var(--scy, 50%),
+    transparent calc(var(--bleed, -20) * 1%),
+    #000 calc(var(--bleed, -20) * 1% + 22%)
+  );
+  mask-image: radial-gradient(
+    circle var(--rr, 200px) at var(--scx, 50%) var(--scy, 50%),
+    transparent calc(var(--bleed, -20) * 1%),
+    #000 calc(var(--bleed, -20) * 1% + 22%)
+  );
+}
+
+/* Scanlines; the arrival sweep clears everything above its line. */
+.intro-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--scan-o, 0.18);
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.55) 0 1px,
+    transparent 1px 3px
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--sweep, 0) * 1%),
+    #000 calc(var(--sweep, 0) * 1%)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--sweep, 0) * 1%),
+    #000 calc(var(--sweep, 0) * 1%)
+  );
+}
+
+.intro-vig {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    var(--vrx, 50%) var(--vry, 50%) at var(--scx, 50%) var(--scy, 50%),
+    transparent 48%,
+    rgb(0 0 0 / var(--vig-o, 0.6)) 100%
+  );
+}
+
+.intro-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--sweep, 0) * 1%);
+  height: 3px;
+  background: var(--cream);
+  box-shadow: 0 0 24px 6px color-mix(in srgb, var(--gold) 60%, transparent);
+  opacity: var(--sweep-o, 0);
+  pointer-events: none;
+}
+
+/* The television. Positioned at 0,0 and moved/scaled by transform only. */
+.intro-tv {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 42;
+  transform-origin: 0 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.tv-floor {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -9%;
+  height: 16%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--gold) 14%, transparent),
+    transparent
+  );
+}
+
+/* Everything that lives on the glass, clipped to its rounded shape. */
+.tv-fx {
+  position: absolute;
+  overflow: hidden;
+}
+
+.tv-fx > * {
+  position: absolute;
+  inset: 0;
+}
+
+.fx-base {
+  background: var(--glass-off);
+  opacity: var(--base-o, 1);
+}
+
+.fx-static {
+  opacity: var(--static-o, 0);
+  filter: brightness(var(--flicker, 1));
+}
+
+.fx-static canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fx-static > * {
+  position: absolute;
+}
+
+.fx-static > canvas {
+  left: 0;
+  top: 0;
+}
+
+.fx-cloud {
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--crt-grey) / 0.5),
+    transparent
+  );
+  animation: cloud-drift 7s ease-in-out infinite alternate;
+}
+
+.fx-cloud.a {
+  width: 85%;
+  height: 65%;
+  left: -12%;
+  bottom: -14%;
+}
+
+.fx-cloud.b {
+  width: 75%;
+  height: 55%;
+  right: -16%;
+  bottom: -6%;
+  animation-delay: -3.5s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes cloud-drift {
+  from {
+    transform: translate3d(-6%, 3%, 0);
+  }
+  to {
+    transform: translate3d(8%, -5%, 0);
+  }
+}
+
+/* Rolling hum bar */
+.fx-hum {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 20%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(255 255 255 / 0.1),
+    transparent
+  );
+  transform: translateY(calc(var(--hum, 0) * 600% - 100%));
+}
+
+/* VHS tracking band along the bottom edge */
+.fx-track {
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 4%;
+  height: 3.2%;
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.75) 0 7px,
+    transparent 7px 13px,
+    rgb(255 255 255 / 0.4) 13px 17px,
+    transparent 17px 41px
+  );
+  transform: translateX(var(--track-x, 0px));
+}
+
+.fx-scan {
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.5) 0 1px,
+    transparent 1px 3px
+  );
+  opacity: 0.18;
+}
+
+.fx-osd {
+  inset: auto;
+  top: 6%;
+  right: 7%;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cream);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--cream) 60%, transparent);
+  opacity: var(--osd-o, 0);
+}
+
+/* CRT turn-on line */
+.fx-line {
+  background: var(--cream);
+  opacity: var(--line-o, 0);
+  transform: scale(var(--line-sx, 0), var(--line-sy, 0));
+}
+
+/* TV controls driven by the timeline */
+.tv-led {
+  fill: var(--tv-dark);
+}
+
+.tv-led-glow {
+  fill: var(--signal-red);
+  opacity: 0;
+}
+
+.tv-led[data-on] {
+  fill: var(--signal-red);
+}
+
+.tv-led-glow[data-on] {
+  opacity: 0.45;
+}
+
+.tv-rim {
+  stroke: var(--tv-edge);
+}
+
+.intro-skip {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 43;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--cream) 40%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  color: var(--cream);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: skip-in var(--t-base) var(--ease-out);
+}
+
+.intro-skip[hidden] {
+  display: none;
+}
+
+@keyframes skip-in {
+  from {
+    opacity: 0;
+  }
+}

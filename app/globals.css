@@ -1,26 +1,562 @@
 @import "tailwindcss";
+@import "./intro.css";
+@import "./sections.css";
 
+/* ------------------------------------------------------------------
+   Design tokens — the single place to swap the palette / motion values.
+   Components read these via Tailwind utilities (bg-burgundy, text-gold…)
+   or var(--token); never raw hex.
+   ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* palette */
+  --ink: #0e0609;
+  --burgundy: #4a0f1f;
+  --burgundy-raised: #5e1628;
+  --gold: #f5b82e;
+  --bulb: #ffd84d;
+  --signal-red: #e2332b;
+  --amber: #f07a1e;
+  --cream: #fcebdc;
+  --card: #fff8f1;
+  --text-on-dark: #fbeadb;
+  --muted-on-dark: #c9a6a0;
+  --text-on-light: #2a0d14;
+  --muted-on-light: #7a4c52;
+
+  /* CRT / television illustration */
+  --tv-body: #26131a;
+  --tv-body-hi: #38212b;
+  --tv-edge: #4b2e39;
+  --tv-dark: #0b0507;
+  --tv-panel: #1a0b0f;
+  --tv-label: #6e4c54;
+  --crt-grey: 205 205 222; /* static cast, as an rgb triplet */
+  --crt-mid: #808080;
+  --glass-off: #15100f;
+
+  /* motion */
+  --t-fast: 120ms;
+  --t-base: 200ms;
+  --t-enter: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-burgundy: var(--burgundy);
+  --color-burgundy-raised: var(--burgundy-raised);
+  --color-gold: var(--gold);
+  --color-bulb: var(--bulb);
+  --color-signal-red: var(--signal-red);
+  --color-amber: var(--amber);
+  --color-cream: var(--cream);
+  --color-card: var(--card);
+  --color-on-dark: var(--text-on-dark);
+  --color-muted-on-dark: var(--muted-on-dark);
+  --color-on-light: var(--text-on-light);
+  --color-muted-on-light: var(--muted-on-light);
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--ink);
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ink);
+  color: var(--text-on-dark);
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+:focus-visible {
+  outline: 3px solid var(--bulb);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------
+   Texture utilities
+   ------------------------------------------------------------------ */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("/grain.png");
+  background-size: 128px;
+  opacity: 0.07;
+}
+
+.scanlines-soft {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.5) 0 1px,
+    transparent 1px 3px
+  );
+  opacity: 0.06;
+}
+
+/* ------------------------------------------------------------------
+   Buttons — one CTA style site-wide
+   ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1.4rem;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition:
+    transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.btn-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.btn-ghost {
+  color: var(--text-on-dark);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  text-decoration-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  padding-inline: 0;
+}
+
+/* ------------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------------ */
+.hero-light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 55% at 86% 10%,
+    color-mix(in srgb, var(--amber) 28%, transparent),
+    transparent 70%
+  );
+}
+
+/* Warm glow; the intro animates its opacity (inline), which never repaints. */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 16% 62%,
+    color-mix(in srgb, var(--gold) 12%, transparent),
+    transparent 70%
+  );
+  will-change: opacity;
+}
+
+/* .hero-extra marks content outside the "broadcast"; the intro fades it in via inline opacity. */
+
+/* Wordmark — placeholder lettering (swap for the official vector logo). */
+.wm-frame {
+  position: relative;
+  padding: 0.22em 0.5em 0.3em;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 22%, transparent);
+  border-radius: 0.3em;
+}
+
+.wm-bloom {
+  position: absolute;
+  inset: -25% -15%;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--amber) 55%, transparent),
+    transparent
+  );
+  opacity: 0.65;
+  will-change: opacity;
+}
+
+.wm {
+  margin: 0;
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-variation-settings:
+    "opsz" 96,
+    "wdth" 100;
+  line-height: 0.92;
+  letter-spacing: 0.005em;
+  color: var(--gold);
+  white-space: nowrap;
+  text-shadow:
+    0.03em 0.03em 0 var(--signal-red),
+    0.06em 0.06em 0 var(--signal-red),
+    0.09em 0.09em 0 var(--ink),
+    calc(var(--chroma, 0) * -1px) 0 0 var(--signal-red),
+    calc(var(--chroma, 0) * 1px) 0 0 var(--bulb);
+}
+
+.wm-year {
+  margin-left: 0.06em;
+  font-size: 0.36em;
+  position: relative;
+  bottom: -0.1em;
+}
+
+/* Horizontal "tear" slices — only visible while the intro drives --tear-on */
+.wm-slice {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--tear-on, 0);
+}
+
+/* Marquee bulbs */
+.bulb-ring {
+  --lit: 36; /* the intro sets this to light the bulbs in sequence */
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bulb {
+  position: absolute;
+  width: clamp(5px, 0.75vw, 9px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: clamp(0.16, calc(var(--lit, 36) - var(--i, 0)), 1);
+}
+
+/* core of the bulb */
+.bulb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--bulb);
+}
+
+/* glow: a gradient (cheap) rather than a blurred box-shadow */
+.bulb::before {
+  content: "";
+  position: absolute;
+  inset: -70%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--bulb) 38%, transparent) 0,
+    transparent 70%
+  );
+}
+
+/* Chase: opacity-only, on the glow, and only for the hero ring. */
+[data-surge] .bulb-ring .bulb::before {
+  animation: bulb-chase 0.9s linear infinite;
+  animation-delay: calc(var(--i) * -0.025s);
+}
+
+@keyframes bulb-chase {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Screen-shaped frame: carries the CRT glass outline into the page. */
+.hero-screen {
+  position: absolute;
+  top: 4rem;
+  bottom: 0.9rem;
+  left: 0.6rem;
+  right: 0.6rem;
+  border: 1.5px solid color-mix(in srgb, var(--gold) 16%, transparent);
+  border-radius: clamp(28px, 5vw, 64px);
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .hero-screen {
+    left: 1.25rem;
+    right: 1.25rem;
+  }
+}
+
+.signal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal-red);
+}
+
+/* Event details: mono label + value, hairline-divided (same idiom as the programme strip). */
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 0;
+}
+
+.hero-meta > div {
+  padding-right: 2rem;
+}
+
+.hero-meta > div + div {
+  padding-left: 2rem;
+  border-left: 1px solid color-mix(in srgb, var(--cream) 18%, transparent);
+}
+
+@media (max-width: 480px) {
+  .hero-meta > div {
+    padding-right: 1.25rem;
+  }
+  .hero-meta > div + div {
+    padding-left: 1.25rem;
+  }
+}
+
+/* Countdown stub — same construction as the event tickets: hard ink border,
+   offset shadow, a perforation with edge notches. */
+.plate {
+  position: relative;
+  max-width: 460px;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  background: var(--burgundy-raised);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.plate-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.95rem 1.25rem;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-on-dark);
+}
+
+.plate-perf {
+  position: relative;
+  height: 0;
+  border-top: 2px dashed color-mix(in srgb, var(--cream) 28%, transparent);
+}
+
+.plate-perf::before,
+.plate-perf::after {
+  content: "";
+  position: absolute;
+  top: -11px;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--burgundy);
+}
+
+.plate-perf::before {
+  left: -11.5px;
+  clip-path: inset(0 0 0 50%);
+}
+
+.plate-perf::after {
+  right: -11.5px;
+  clip-path: inset(0 50% 0 0);
+}
+
+.plate-body {
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+
+.plate-unit + .plate-unit {
+  border-left: 1px solid color-mix(in srgb, var(--cream) 14%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   Navigation
+   ------------------------------------------------------------------ */
+[data-spy] {
+  scroll-margin-top: 3.5rem;
+}
+
+#home {
+  scroll-margin-top: 0;
+}
+
+html.menu-open {
+  overflow: hidden;
+}
+
+.site-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50; /* above the intro layers (40–43) so it can arrive over them */
+  background: transparent;
+  transition:
+    transform 240ms var(--ease-out),
+    background-color var(--t-base) var(--ease-out);
+}
+
+.site-nav[data-solid] {
+  background: color-mix(in srgb, var(--ink) 95%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Not part of the broadcast: hidden while the CRT intro plays, slides in on arrival. */
+html[data-intro="play"]:not([data-intro-state="arriving"]) .site-nav {
+  transform: translateY(-100%);
+  visibility: hidden;
+}
+
+.nav-logo {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+  color: var(--gold);
+  text-decoration: none;
+}
+
+.nav-logo span {
+  margin-left: 0.15em;
+  font-size: 0.6em;
+  color: var(--signal-red);
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 0.8rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-on-dark);
+  text-decoration: none;
+}
+
+/* Active location: one lit bulb under the label. */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bulb);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--bulb) 60%, transparent);
+  transform: translateX(-50%) scale(0);
+  transition: transform var(--t-base) var(--ease-out);
+}
+
+.nav-link[aria-current]::after {
+  transform: translateX(-50%) scale(1);
+}
+
+.nav-menu-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1.5px solid color-mix(in srgb, var(--cream) 45%, transparent);
+  border-radius: 999px;
+  color: var(--text-on-dark);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  display: none;
+  overflow-y: auto;
+  padding: 4.5rem 1.25rem 2rem;
+  background: var(--ink);
+}
+
+.mobile-menu[data-open] {
+  display: block;
+  animation: menu-in var(--t-base) var(--ease-out);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.mobile-menu-link {
+  display: flex;
+  min-height: 64px;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cream) 14%, transparent);
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-on-dark);
+  text-decoration: none;
+}
+
+.mobile-menu-link[aria-current] {
+  color: var(--gold);
+}
+
+/* ------------------------------------------------------------------
+   Countdown
+   ------------------------------------------------------------------ */
+.digit {
+  display: inline-block;
+  animation: digit-in var(--t-fast) var(--ease-out);
+}
+
+@keyframes digit-in {
+  from {
+    transform: translateY(35%);
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .digit {
+    animation: none;
+  }
+  .site-nav,
+  .nav-link::after {
+    transition: none;
+  }
 }

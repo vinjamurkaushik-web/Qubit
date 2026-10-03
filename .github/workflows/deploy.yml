@@ -1,0 +1,54 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # The site is served from https://<user>.github.io/<repo>/
+      BASE_PATH: /${{ github.event.repository.name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # The one root-absolute asset URL in the stylesheet (url("/grain.png"))
+      # is not rewritten by basePath, so point it at the repo path in the output.
+      - name: Prefix stylesheet asset URL with the base path
+        run: |
+          find out -name '*.css' -exec sed -i -E "s#url\((['\"]?)/grain\.png#url(\1${BASE_PATH}/grain.png#g" {} +
+          grep -rq "${BASE_PATH}/grain.png" out --include='*.css'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

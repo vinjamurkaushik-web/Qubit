@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
+// GitHub Pages serves a project site from /<repo-name>/. The deploy workflow
+// sets BASE_PATH for its build; local builds leave it unset (served from "/").
+const basePath = process.env.BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "export",
+  basePath,
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

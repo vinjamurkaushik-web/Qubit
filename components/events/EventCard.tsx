@@ -25,7 +25,7 @@ export function EventCard({ event, index }: { event: QubitEvent; index: number }
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-primary mt-auto w-full"
-          aria-label={`Register for ${event.name} on Student Tribe (opens in new tab)`}
+          aria-label={`Register for ${event.name} (opens in new tab)`}
         >
           Register Now <span aria-hidden="true">↗</span>
         </a>

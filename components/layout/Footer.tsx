@@ -1,7 +1,7 @@
 import { navItems } from "@/content/nav";
 import { site } from "@/content/site";
 
-/** Closing footer: the nav repeated, the Student Tribe note, and the wordmark. */
+/** Closing footer: the nav repeated and the wordmark. */
 export function Footer() {
   return (
     <footer className="bg-ink text-on-dark">
@@ -17,10 +17,6 @@ export function Footer() {
             ))}
           </ul>
         </nav>
-        <p className="mt-8 max-w-[52ch] text-muted-on-dark">
-          Registration is handled by Student Tribe. Each event’s Register Now button takes you to
-          its page there.
-        </p>
         <p
           className="mt-10 font-display text-[clamp(3.5rem,14vw,9rem)] font-extrabold leading-[0.9] tracking-[-0.02em] text-gold"
           aria-hidden="true"

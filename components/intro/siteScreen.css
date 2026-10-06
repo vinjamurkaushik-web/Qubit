@@ -1,0 +1,19 @@
+/* Marks what the TV screen frames: roughly the reference site's hero title,
+   as a share of the viewport (the iframe fills the viewport). */
+.site-focus {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 76%;
+  height: 28%;
+  transform: translate(-50%, -50%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 767px), (min-aspect-ratio: 1/1) and (max-height: 500px) {
+  .site-focus {
+    top: 30%;
+    width: 90%;
+  }
+}

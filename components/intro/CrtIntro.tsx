@@ -19,7 +19,7 @@ type NavigatorExtras = Navigator & {
 };
 
 /** Review speeds selected with ?intro=… (force and anything else = real time). */
-const INTRO_SPEEDS: Record<string, number> = { slow: 0.25, medium: 0.625 };
+const INTRO_SPEEDS: Record<string, number> = { slow: 0.25, medium: 0.625, perfect_speed: 0.45 };
 
 /** full → everything; lite → no tear / chroma slices; crossfade → no TV at all. */
 function detectTier(): Tier {

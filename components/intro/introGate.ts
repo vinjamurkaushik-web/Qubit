@@ -15,7 +15,7 @@ export const INTRO_GATE_SCRIPT = `(function(){try{
 var d=document.documentElement,s=location.search;
 d.setAttribute('data-js','');
 if(/[?&]nointro/.test(s))return;
-var force=/[?&]intro=(force|slow|medium)/.test(s);
+var force=/[?&]intro=(force|slow|medium|perfect_speed)/.test(s);
 if(location.hash&&!force)return;
 if(!force&&sessionStorage.getItem('qubit-intro')==='1')return;
 sessionStorage.setItem('qubit-intro','1');

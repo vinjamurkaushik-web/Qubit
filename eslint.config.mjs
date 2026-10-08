@@ -12,9 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Vanilla static site served as-is, and the untouched reference source.
+    // Vanilla static site served as-is.
     "public/site/**",
-    "Reference-site/**",
   ]),
 ]);
 

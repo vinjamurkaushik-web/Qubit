@@ -69,7 +69,7 @@ function tick(){const el=$("#cd");if(!el)return;const s=Math.max(0,Math.floor((T
   if(Date.now()>=T){el.innerHTML=`<p class="cdmsg">${CONFIG.afterMsg}</p>`;return}
   el.innerHTML=`<div class="cdbox">${[["Days",s/86400],["Hours",s%86400/3600],["Mins",s%3600/60],["Secs",s%60]].map(([l,n])=>`<span class="cu"><b>${String(Math.floor(n)).padStart(2,"0")}</b><small>${l}</small></span>`).join('<i class="cc" aria-hidden="true">:</i>')}</div>`}
 // router
-let cur="",io,archiveFrame=0;
+let cur="",io,archiveIO,archiveFrame=0;
 const FOOT=`<footer class="mgit-foot"><img src="${esc(CONFIG.collegeLogo)}" alt="Mahatma Gandhi Institute of Technology logo"><p><span class="l1">QUBIT ’26 &nbsp;·&nbsp; Department of CSE</span><span class="dot"> &nbsp;·&nbsp; </span><span class="l2">Mahatma Gandhi Institute of Technology</span></p></footer>`;
 function route(){
   const h=location.hash,m=h.match(/^#\/(tech|non)$/),d=h.match(/^#\/event\/(tech|non)\/(\d+)$/),ok=d&&CONFIG[d[1]][d[2]];
@@ -77,7 +77,7 @@ function route(){
   const returningToHome=key==="home"&&cur!==""&&cur!=="home"&&h.length>1;
   if(!returningToHome)app.style.visibility="";
   if(returningToHome)app.style.visibility="hidden";
-  if(key!==cur){if(archiveFrame)cancelAnimationFrame(archiveFrame);archiveFrame=0;cur=key;app.innerHTML=`<div class="view">${m?list(m[1]):ok?detail(d[1],+d[2]):home()}</div>${FOOT}`;
+  if(key!==cur){if(archiveFrame)cancelAnimationFrame(archiveFrame);archiveFrame=0;if(archiveIO){archiveIO.disconnect();archiveIO=null}cur=key;app.innerHTML=`<div class="view">${m?list(m[1]):ok?detail(d[1],+d[2]):home()}</div>${FOOT}`;
     if(key==="home"){tick();initArchive();io&&io.disconnect();io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&mark("#"+x.target.id)),{rootMargin:"-40% 0px -55% 0px"});app.querySelectorAll("section[id]").forEach(s=>io.observe(s))}else{io&&io.disconnect();mark("#events")}}
   if(key==="home"){let t=null;try{t=h.length>1&&$(h)}catch(e){}if(t){const align=()=>{if(location.hash!==h||cur!=="home")return;t.scrollIntoView({behavior:"instant",block:"start"});app.style.visibility=""};if(returningToHome){const pending=[...app.querySelectorAll("img")].filter(img=>(t.compareDocumentPosition(img)&Node.DOCUMENT_POSITION_PRECEDING)&&!img.complete);if(pending.length)Promise.all(pending.map(img=>new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true})}))).then(align);else requestAnimationFrame(()=>requestAnimationFrame(align))}else t.scrollIntoView({behavior:"instant",block:"start"})}else scrollTo({top:0,behavior:"instant"})}else scrollTo({top:0,behavior:"instant"});
   fx();
@@ -105,7 +105,8 @@ function initArchive(){
     last=time;
     archiveFrame=requestAnimationFrame(advance);
   };
-  if(!reduced&&CONFIG.gallery.length>1)archiveFrame=requestAnimationFrame(advance);
+  /* drift only while the archive is on screen: off-screen it forced a layout read every frame */
+  if(!reduced&&CONFIG.gallery.length>1){archiveIO=new IntersectionObserver(es=>{cancelAnimationFrame(archiveFrame);archiveFrame=0;if(es[es.length-1].isIntersecting){last=0;archiveFrame=requestAnimationFrame(advance)}});archiveIO.observe(viewport)}
 }
 // menu button: opens as an overlay right where the user is (no scroll jump, no page lock)
 (()=>{const btn=$("#menuBtn"),hd=$("header"),panel=$("#menuPanel");if(!btn||!panel)return;

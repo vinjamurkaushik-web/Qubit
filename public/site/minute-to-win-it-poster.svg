@@ -3,7 +3,7 @@
   <rect x="28" y="28" width="744" height="944" fill="none" stroke="#ffc933" stroke-width="8"/>
   <path d="M70 150h660M70 850h660" stroke="#e0392b" stroke-width="8" stroke-dasharray="18 16"/>
   <text x="400" y="360" fill="#ffc933" font-family="Arial,sans-serif" font-size="46" font-weight="700" letter-spacing="12" text-anchor="middle">QUBIT '26</text>
-  <text x="400" y="514" fill="#fde3c1" font-family="Arial,sans-serif" font-size="92" font-weight="900" text-anchor="middle">404 BRAIN</text>
-  <text x="400" y="615" fill="#fde3c1" font-family="Arial,sans-serif" font-size="92" font-weight="900" text-anchor="middle">NOT FOUND</text>
+  <text x="400" y="514" fill="#fde3c1" font-family="Arial,sans-serif" font-size="92" font-weight="900" text-anchor="middle">MINUTE</text>
+  <text x="400" y="615" fill="#fde3c1" font-family="Arial,sans-serif" font-size="92" font-weight="900" text-anchor="middle">TO WIN IT</text>
   <text x="400" y="695" fill="#e0b79c" font-family="Arial,sans-serif" font-size="32" letter-spacing="5" text-anchor="middle">EVENT POSTER</text>
 </svg>
